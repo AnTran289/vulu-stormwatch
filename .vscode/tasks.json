@@ -1,0 +1,88 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "debug-db-status",
+			"type": "shell",
+			"command": "docker",
+			"args": [
+				"compose",
+				"-f",
+				"compose.yml",
+				"ps"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "inspect-db-ports",
+			"type": "shell",
+			"command": "docker",
+			"args": [
+				"inspect",
+				"stormwatch-vulu-db-1",
+				"--format",
+				"{{json .HostConfig.PortBindings}}"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "recreate-db",
+			"type": "shell",
+			"command": "docker",
+			"args": [
+				"compose",
+				"-f",
+				"compose.yml",
+				"up",
+				"-d",
+				"--force-recreate",
+				"db"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "inspect-db-ports-after",
+			"type": "shell",
+			"command": "docker",
+			"args": [
+				"inspect",
+				"stormwatch-vulu-db-1",
+				"--format",
+				"{{json .HostConfig.PortBindings}}"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "compose-ps-after",
+			"type": "shell",
+			"command": "docker",
+			"args": [
+				"compose",
+				"-f",
+				"compose.yml",
+				"ps"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "python-connect-test-5434",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-c",
+				"from sqlalchemy import create_engine,text; e=create_engine('postgresql+psycopg://flood_aid:flood_aid@localhost:5434/flood_aid', connect_args={'connect_timeout':5}); c=e.connect(); print(c.execute(text('SELECT 1')).scalar_one()); c.close()"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "python-connect-test-5434-fixed",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-c",
+				"from sqlalchemy import create_engine, text; e = create_engine(\"postgresql+psycopg://flood_aid:flood_aid@localhost:5434/flood_aid\", connect_args={\"connect_timeout\": 5}); c = e.connect(); print(c.execute(text(\"SELECT 1\")).scalar_one()); c.close()"
+			],
+			"isBackground": false
+		}
+	]
+}

@@ -1,0 +1,47 @@
+name: stormwatch-vulu-production
+
+x-stormwatch-production: &stormwatch-production
+  image: ${STORMWATCH_IMAGE:-stormwatch-vulu:latest}
+  env_file:
+    - path: ${STORMWATCH_ENV_FILE:-.env.production}
+      required: true
+  environment:
+    PYTHONPATH: /app/src
+  restart: unless-stopped
+
+services:
+  migrate:
+    <<: *stormwatch-production
+    restart: "no"
+    command: alembic upgrade head
+
+  stormwatch-api:
+    <<: *stormwatch-production
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: uvicorn stormwatch.api.main:app --host 0.0.0.0 --port 8001
+    expose:
+      - "8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  stormwatch-job:
+    <<: *stormwatch-production
+    profiles: ["scheduled-job"]
+    restart: "no"
+    command: python scripts/run_pipeline.py
+
+  reverse-proxy:
+    image: nginx:1.29-alpine
+    depends_on:
+      stormwatch-api:
+        condition: service_healthy
+    ports:
+      - "${STORMWATCH_HTTP_PORT:-8080}:80"
+    volumes:
+      - ./deploy/nginx/stormwatch.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped

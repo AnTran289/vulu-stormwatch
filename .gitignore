@@ -1,0 +1,13 @@
+.env
+.env.docker.local
+.env.production
+.env.supabase
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+**/__pycache__/
+*.py[cod]
+data/raw/
+logs/
+src/*.egg-info/

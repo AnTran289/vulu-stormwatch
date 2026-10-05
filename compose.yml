@@ -1,0 +1,46 @@
+name: stormwatch-vulu
+
+x-stormwatch-service: &stormwatch-service
+  image: stormwatch-vulu:local
+  build: .
+  env_file:
+    - path: ${STORMWATCH_ENV_FILE:-.env.docker.local.example}
+      required: true
+  environment:
+    PYTHONPATH: /app/src
+
+x-live-code-volumes: &live-code-volumes
+  - ./src:/app/src
+  - ./scripts:/app/scripts
+  - ./data:/app/data
+  - ./logs:/app/logs
+
+services:
+  migrate:
+    <<: *stormwatch-service
+    command: alembic upgrade head
+
+  api:
+    <<: *stormwatch-service
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "8001:8001"
+    command: uvicorn stormwatch.api.main:app --host 0.0.0.0 --port 8001 --reload
+    volumes: *live-code-volumes
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    <<: *stormwatch-service
+    profiles: ["scheduled-job"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: python scripts/run_pipeline.py
+    restart: "no"
+    volumes: *live-code-volumes

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stormwatch-vulu"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "alembic",
+    "boto3",
+    "fastapi",
+    "psycopg[binary]",
+    "requests",
+    "pandas",
+    "python-dotenv",
+    "sqlalchemy",
+    "uvicorn[standard]",
+]
+
+[project.optional-dependencies]
+test = ["httpx2", "pytest"]
+dev = ["httpx2", "mypy", "pytest", "ruff"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src/stormwatch", "scripts"]
+ignore_missing_imports = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+check_untyped_defs = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
