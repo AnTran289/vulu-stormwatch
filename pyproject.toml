@@ -19,8 +19,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["httpx2", "pytest"]
-dev = ["httpx2", "mypy", "pytest", "ruff"]
+test = ["httpx", "pytest"]
+dev = ["httpx", "mypy", "pytest", "ruff"]
 
 [tool.ruff]
 line-length = 100
