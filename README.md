@@ -13,6 +13,14 @@ Docker, GitHub Actions, and AWS ECS/ECR/S3 deployment integrations.
 
 ## Engineering highlights
 
+| Data Engineering concern | Evidence in this repository |
+|---|---|
+| Pipeline stages | Weather extraction, typed transformations, rainfall-risk calculation, PostgreSQL persistence |
+| Reliability | Per-location retry/backoff, persisted failures, advisory locks against overlapping runs |
+| Data lifecycle | Alembic migrations, separate operational run/failure tables, environment-driven configuration |
+| Serving | Read-only FastAPI endpoints for weather and risk data |
+| Verification | Unit/integration tests and CI configuration for linting, typing, migrations, and image builds |
+
 - Separate extraction, transformation, and persistence stages with typed models.
 - Per-location retries with exponential backoff and persisted failure history.
 - PostgreSQL advisory locking to prevent concurrent pipeline runs.
@@ -26,8 +34,8 @@ The checked-in province coordinate CSV supports running the pipeline without
 the main VULU backend. The `sync_locations.py` script is an optional integration
 with that backend.
 
-For preparing a separate public portfolio copy, see
-[the publication guide](PUBLIC_RELEASE.md).
+For provenance and safe publication considerations, see the
+[portfolio publication guide](PUBLIC_RELEASE.md). This public repository is a portfolio copy; the guide documents considerations for preparing or republishing copies.
 
 StormWatch is VULU's isolated weather and flood-risk reference service. It owns
 weather extraction, transformation, persistence, risk calculation, and its
@@ -39,20 +47,14 @@ read-only FastAPI surface.
 
 ## Architecture and service boundary
 
-```text
-Open-Meteo
-    |
-    v
-StormWatch ETL: extract -> transform -> risk calculation -> load
-    |
-    v
-PostgreSQL (weather, daily forecasts, risk, run/failure history)
-    |
-    v
-StormWatch FastAPI :8001
-    |
-    v
-VULU frontend
+```mermaid
+flowchart TD
+    A[Open-Meteo] --> B[Extract and transform forecasts]
+    B --> C[Calculate rainfall-risk indicators]
+    C --> D[PostgreSQL: forecasts, risk, run and failure history]
+    D --> E[Read-only FastAPI service :8001]
+    E --> F[VULU frontend integration]
+    G[Migration and CI tooling] -.-> D
 ```
 
 The main VULU backend on port `8000` does not own StormWatch weather or risk
@@ -134,7 +136,9 @@ mounts provide live source updates without mounting the Windows virtual
 environment into Linux. The API stays online independently of ETL execution.
 The built-in `run_worker.py` scheduler remains disabled and retained for review.
 
-The portfolio copy includes CI. Production scheduling requires separate configuration.The pipeline also acquires a PostgreSQL session advisory lock before doing any
+The portfolio copy includes CI. Production scheduling requires separate configuration.
+
+The pipeline also acquires a PostgreSQL session advisory lock before doing any
 work. This protects against overlap across GitHub Actions, manual runs, and
 other schedulers. A competing invocation logs that it was skipped and exits
 successfully; PostgreSQL releases the lock automatically if the session ends.
@@ -177,6 +181,8 @@ docker compose -f compose.production.yml --profile scheduled-job run --rm --no-d
 The production compose profile is provided as a deployment example. Configure your own database, registry, and scheduler before using it.
 
 ## Tests
+
+The commands below describe how to run the checked-in test suite locally; they were not executed as part of this README update. The `pyproject.toml` currently lists `httpx2` in its optional test/development dependencies; verify and correct that dependency before relying on the documented install command.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
