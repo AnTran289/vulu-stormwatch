@@ -24,6 +24,9 @@ internet access to fetch forecasts from Open-Meteo; no AWS account is required.
   API and ETL worker.
 - **Amazon ECS (original VULU production):** Runs the API container and
   scheduled ETL tasks.
+- **Amazon EventBridge Scheduler (original VULU production):** Launches a
+  standalone ECS task every hour to refresh weather forecasts and rainfall-risk
+  data.
 
 This public repository includes Dockerfiles and a deployment example using
 Compose. GitHub Actions checks the code and builds the images; it does not
