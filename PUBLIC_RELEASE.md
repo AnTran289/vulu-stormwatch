@@ -4,8 +4,8 @@ Suggested repository name: `vulu-stormwatch`.
 
 Suggested GitHub description:
 
-> Weather ETL and rainfall-risk API for Vietnam using Python, FastAPI,
-> PostgreSQL, Docker, and AWS deployment integrations.
+> Weather ETL and rainfall-risk API for Vietnam, built with FastAPI,
+> PostgreSQL, and Docker.
 
 Suggested topics: `python`, `fastapi`, `postgresql`, `etl`, `weather`, `docker`,
 `sqlalchemy`, `github-actions`.

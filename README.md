@@ -9,7 +9,25 @@ demonstrates backend development, ETL design, database migrations, automated
 testing, and container deployment.
 
 **Stack:** Python 3.11+, FastAPI, SQLAlchemy, PostgreSQL, Alembic, pandas,
-Docker, GitHub Actions, and AWS ECS/ECR/S3 deployment integrations.
+Docker, and GitHub Actions.
+
+You can run the API and pipeline locally with PostgreSQL. The pipeline needs
+internet access to fetch forecasts from Open-Meteo; no AWS account is required.
+
+## AWS in StormWatch
+
+- **Amazon S3 (optional):** The pipeline saves raw forecast JSON to local
+  files by default. Set `RAW_S3_BUCKET` and provide AWS credentials with write
+  access to archive those files in S3 instead. The API still reads processed
+  forecasts and risk scores from PostgreSQL.
+- **Amazon ECR (original VULU production):** Stores the Docker images for the
+  API and ETL worker.
+- **Amazon ECS (original VULU production):** Runs the API container and
+  scheduled ETL tasks.
+
+This public repository includes Dockerfiles and a deployment example using
+Compose. GitHub Actions checks the code and builds the images; it does not
+publish them to ECR or deploy to ECS.
 
 ## Engineering highlights
 
